@@ -23,7 +23,7 @@
     
     支持查询多个股票
     例如:
-        python stock_terminal.py -c sh601003,sz000816,sz000778,ss600221
+        python stock_terminal.py -c sh601003,sz000816,sz000778,sh600221
 
 实现:
 ----
