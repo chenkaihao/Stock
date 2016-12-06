@@ -74,7 +74,13 @@ class Stock(object):
         if code in ['s_sh000001', 's_sz399001']:
             slice_num = 23
             value_num = 1
-        r = requests.get("http://hq.sinajs.cn/list=%s" % (code,))
+        while 1:
+            try:
+                r = requests.get("http://hq.sinajs.cn/list=%s" % (code,))
+            except requests.exceptions.RequestException as e:
+                time.sleep(1)
+                continue
+            break
         res = r.text.split(',')
         if len(res) > 1:
             name, now = r.text.split(',')[0][slice_num:], r.text.split(',')[value_num]
