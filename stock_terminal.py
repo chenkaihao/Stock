@@ -9,6 +9,7 @@ import requests
 import time
 import sys
 import threading
+import signal
 
 from Queue import Queue
 from optparse import OptionParser
@@ -20,6 +21,7 @@ class Worker(threading.Thread):
         threading.Thread.__init__(self)
         self.work_queue = work_queue
         self.result_queue = result_queue
+        self.setDaemon(True)
         self.start()
 
     def run(self):
@@ -78,6 +80,8 @@ class Stock(object):
             name, now = r.text.split(',')[0][slice_num:], r.text.split(',')[value_num]
         return code_index, name + ' ' + now
 
+def quit(signum, frame):
+    sys.exit()
 
 if __name__ == '__main__':
     parser = OptionParser(description="Query the stock's value.", usage="%prog [-c] [-s] [-t]", version="%prog 1.0")
@@ -93,8 +97,14 @@ if __name__ == '__main__':
     if filter(lambda s: s[:-6] not in ('sh', 'sz', 's_sh', 's_sz'), options.codes.split(',')):  # 股票代码输入是否正确
         raise ValueError
 
-    stock = Stock(options.codes, options.thread_num)
+    try:
+        signal.signal(signal.SIGINT, quit)
+        signal.signal(signal.SIGTERM, quit)
 
-    while True:
-        stock.del_params()
-        time.sleep(options.sleep_time)
+        stock = Stock(options.codes, options.thread_num)
+
+        while True:
+            stock.del_params()
+            time.sleep(options.sleep_time)
+    except Exception, e:
+        print Exception,":",e
